@@ -1,0 +1,11 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "description": "Hospital Queue Management System - Using Bootstrap CDN instead of Vite",
+    "scripts": {
+        "dev": "echo 'Using Bootstrap CDN - no build process needed'"
+    },
+    "dependencies": {
+        "axios": "^1.11.0"
+    }
+}
