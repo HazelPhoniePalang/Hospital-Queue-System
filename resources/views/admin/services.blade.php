@@ -44,7 +44,7 @@
                                 <form action="{{ route('admin.services.delete', $s->getKey()) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this service?')" title="Delete">🗑️</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Archive this service?')" title="Archive">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -56,6 +56,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ route('admin.services.archive') }}" class="text-decoration-none text-body-tertiary small">View archived services</a>
     </div>
 
     <div class="modal fade" id="service-modal" tabindex="-1">

@@ -6,8 +6,9 @@ use App\Models\Department;
 use App\Models\Payment;
 use App\Models\QueueEntry;
 use App\Models\Visit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\Response;
 
 class ReportController extends Controller
 {
@@ -36,7 +37,7 @@ class ReportController extends Controller
                 ->get(),
             'visit' => Visit::with(['queue.patient', 'queue.department'])
                 ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
-                ->when($departmentId, fn ($q) => $q->whereHas('queue', fn ($sq) => $q->where('department_id', $departmentId)))
+                ->when($departmentId, fn ($q) => $q->whereHas('queue', fn ($sq) => $sq->where('department_id', $departmentId)))
                 ->orderBy('created_at', 'desc')
                 ->get(),
             default => collect(),
@@ -67,7 +68,7 @@ class ReportController extends Controller
         return back()->with('error', 'Invalid report type');
     }
 
-    private function exportQueueReport(Request $request, string $format, string $fileName): StreamedResponse
+    private function exportQueueReport(Request $request, string $format, string $fileName): Response
     {
         $departmentId = $request->get('department');
         $status = $request->get('status');
@@ -88,9 +89,9 @@ class ReportController extends Controller
         $queues = $query->orderBy('created_at', 'desc')->get();
 
         if ($format === 'pdf') {
-            return response()->streamDownload(function () use ($queues) {
-                echo view('admin.exports.queue-pdf', compact('queues'))->render();
-            }, $fileName.'.pdf', ['Content-Type' => 'application/pdf']);
+            $pdf = Pdf::loadView('admin.exports.queue-pdf', compact('queues'));
+
+            return $pdf->stream($fileName.'.pdf', ['attachment' => 1]);
         }
 
         $headers = ['Queue No', 'Patient Name', 'Department', 'Service', 'Status', 'Created At', 'Called At', 'Completed At'];
@@ -112,7 +113,7 @@ class ReportController extends Controller
         return $this->downloadCsv($headers, $rows, $fileName);
     }
 
-    private function exportPaymentReport(Request $request, string $format, string $fileName): StreamedResponse
+    private function exportPaymentReport(Request $request, string $format, string $fileName): Response
     {
         $departmentId = $request->get('department');
         $status = $request->get('status');
@@ -135,9 +136,9 @@ class ReportController extends Controller
         $payments = $query->orderBy('created_at', 'desc')->get();
 
         if ($format === 'pdf') {
-            return response()->streamDownload(function () use ($payments) {
-                echo view('admin.exports.payment-pdf', compact('payments'))->render();
-            }, $fileName.'.pdf', ['Content-Type' => 'application/pdf']);
+            $pdf = Pdf::loadView('admin.exports.payment-pdf', compact('payments'));
+
+            return $pdf->stream($fileName.'.pdf', ['attachment' => true]);
         }
 
         $headers = ['Payment ID', 'Patient Name', 'Department', 'Amount', 'Payment Method', 'Status', 'Paid At'];
@@ -156,7 +157,7 @@ class ReportController extends Controller
         return $this->downloadCsv($headers, $rows, $fileName);
     }
 
-    private function exportVisitReport(Request $request, string $format, string $fileName): StreamedResponse
+    private function exportVisitReport(Request $request, string $format, string $fileName): Response
     {
         $departmentId = $request->get('department');
         $status = $request->get('status');
@@ -175,9 +176,9 @@ class ReportController extends Controller
         $visits = $query->orderBy('created_at', 'desc')->get();
 
         if ($format === 'pdf') {
-            return response()->streamDownload(function () use ($visits) {
-                echo view('admin.exports.visit-pdf', compact('visits'))->render();
-            }, $fileName.'.pdf', ['Content-Type' => 'application/pdf']);
+            $pdf = Pdf::loadView('admin.exports.visit-pdf', compact('visits'));
+
+            return $pdf->stream($fileName.'.pdf', ['attachment' => true]);
         }
 
         $headers = ['Visit ID', 'Patient Name', 'Department', 'Doctor Notes', 'Diagnosis', 'Created At'];
@@ -186,7 +187,7 @@ class ReportController extends Controller
                 $v->getKey(),
                 $v->queue && $v->queue->patient ? $v->queue->patient->name : 'N/A',
                 $v->queue && $v->queue->department ? $v->queue->department->name : 'N/A',
-                $v->doctor_notes,
+                $v->notes,
                 $v->diagnosis,
                 $v->created_at->format('Y-m-d H:i:s'),
             ];
@@ -195,7 +196,7 @@ class ReportController extends Controller
         return $this->downloadCsv($headers, $rows, $fileName);
     }
 
-    private function downloadCsv(array $headers, $rows, string $fileName): StreamedResponse
+    private function downloadCsv(array $headers, $rows, string $fileName): Response
     {
         $callback = function () use ($headers, $rows) {
             $handle = fopen('php://output', 'w');

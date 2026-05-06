@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-5" style="min-height: 100vh; background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 20rem), linear-gradient(180deg, #080808 0%, #171717 100%);">
+<div class="display-board py-5">
     <div class="container-fluid px-4 px-lg-5 text-white">
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-4 mb-5">
             <div>
@@ -23,7 +23,7 @@
                             <h2 class="h1 mb-1" style="color: #f8f4eb;">Active counters</h2>
                             <div style="color: rgba(248, 244, 235, 0.68);">Live calls from staff counters</div>
                         </div>
-                        <span class="subtle-chip" style="background: rgba(255,255,255,0.08); color: #f8f4eb;">Please proceed</span>
+                        <span class="subtle-chip " style="background: rgba(255,255,255,0.08); color: #f8f4eb;">Please proceed</span>
                     </div>
 
                     <div class="queue-board-grid">
@@ -71,9 +71,9 @@
                             <tbody>
                                 @forelse($calledQueues as $q)
                                     <tr>
-                                        <td class="fw-semibold fs-4" style="color: #f8f4eb;">{{ $q->queue_no }}</td>
-                                        <td>{{ $q->department->name }}</td>
-                                        <td>{{ $q->service->service_name }}</td>
+                                        <td class="fw-semibold" style="color: #f8f4eb;">{{ $q->queue_no }}</td>
+                                        <td class="fw-semibold" style="color: #f8f4eb;">{{ $q->department->name }}</td>
+                                        <td class="fw-semibold" style="color: #f8f4eb;">{{ $q->service->service_name }}</td>
                                     </tr>
                                 @empty
                                     <tr>

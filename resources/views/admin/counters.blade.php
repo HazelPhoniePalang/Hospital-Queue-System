@@ -51,7 +51,7 @@
                                 <form action="{{ route('admin.counters.delete', $counter->getKey()) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this counter?')" title="Delete">🗑️</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Archive this counter?')" title="Archive">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -63,6 +63,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ route('admin.counters.archive') }}" class="text-decoration-none text-body-tertiary small">View archived counters</a>
     </div>
 
     <!-- Counter Modal -->

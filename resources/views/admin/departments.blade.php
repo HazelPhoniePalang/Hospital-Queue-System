@@ -34,7 +34,7 @@
                         <form action="{{ route('admin.departments.delete', $d->getKey()) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this department?')" title="Delete">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Archive this department?')" title="Archive">Delete</button>
                         </form>
                     </div>
                 </div>
@@ -44,6 +44,10 @@
                 <div class="empty-state">No departments have been created yet.</div>
             </div>
         @endforelse
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ route('admin.departments.archive') }}" class="text-decoration-none text-body-tertiary small">View archived departments</a>
     </div>
 
     <div class="modal fade" id="dept-modal" tabindex="-1">

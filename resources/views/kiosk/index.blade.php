@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-lg-1">
+<div class="container">
     <div class="row g-4 align-items-center min-vh-100">
         <div class="col-lg-7">
             <span class="eyebrow mb-3">Patient Queue Registration</span>

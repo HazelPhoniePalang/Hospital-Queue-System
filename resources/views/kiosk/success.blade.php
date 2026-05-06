@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
+<div class="container py-3">
     <div class="row justify-content-center">
         <div class="col-lg-8 col-xl-7">
             <div class="text-center mb-4">
@@ -43,22 +43,6 @@
                 </div>
             </div>
 
-            <div class="glass-panel p-4 mb-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="fw-semibold mb-1">1. Save</div>
-                        <div class="text-body-tertiary small">Patient record and queue number are already stored in the system.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="fw-semibold mb-1">2. Print</div>
-                        <div class="text-body-tertiary small">Use this screen as the print-ready summary for the patient ticket.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="fw-semibold mb-1">3. Wait for call</div>
-                        <div class="text-body-tertiary small">The patient proceeds when the queue board updates with their number.</div>
-                    </div>
-                </div>
-            </div>
 
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
                 <a href="{{ route('kiosk.index') }}" class="btn btn-primary btn-lg px-4">Register another patient</a>

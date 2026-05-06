@@ -57,8 +57,8 @@
                                     <input type="text" id="address" name="address" class="form-control" value="{{ old('address') }}" placeholder="Street, barangay, city">
                                 </div>
                                 <div>
-                                    <label for="Symptoms" class="form-label fw-semibold">Symptoms and notes</label>
-                                    <textarea id="Symptoms" name="Symptoms" class="form-control" rows="3" required placeholder="Symptoms, information or notes">{{ old('Symptoms') }}</textarea>
+                                    <label for="symptoms" class="form-label fw-semibold">Symptoms and notes</label>
+                                    <textarea id="symptoms" name="symptoms" class="form-control" rows="3" required placeholder="Symptoms, information or notes" value="{{ old('symptoms') }}">{{ old('symptoms') }}</textarea>
                                 </div>
                             </div>
                         </div>

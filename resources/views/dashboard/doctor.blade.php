@@ -3,14 +3,21 @@
 @section('content')
 <div class="container py-5">
     @if(session('success') && session('download_pdf'))
-    <div class="alert alert-success d-flex justify-content-between align-items-center mb-4">
+    <div class="alert alert-success d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3 rounded-5">
         <div>
             <i class="bi bi-check-circle me-2"></i>
             {{ session('success') }}
         </div>
-        <a href="{{ route('visits.download-pdf', session('download_pdf')) }}" target="_blank" class="btn btn-success">
-            <i class="bi bi-file-earmark-pdf me-2"></i>Download Medical Certificate
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('visits.download-pdf', session('download_pdf')) }}" target="_blank" class="btn btn-success">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Download Medical Certificate
+            </a>
+            <!-- @if(session('visit_id'))
+            <a href="{{ route('visits.clinical-notes', session('visit_id')) }}" target="_blank" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-medical me-2"></i>Download Clinical Notes (Patient Copy)
+            </a>
+            @endif -->
+        </div>
     </div>
     @endif
 
@@ -25,10 +32,7 @@
         <div>
             <span class="eyebrow mb-3">Doctor Dashboard</span>
             <h1 class="section-title mb-3">Consultation patients for {{ $department->name }}</h1>
-            <p class="lede mb-0">
-                Open each patient consultation, verify the linked queue details, and record the notes
-                and diagnosis needed to complete the visit.
-            </p>
+            
         </div>
 
         <div class="d-flex flex-wrap gap-3">
@@ -61,9 +65,12 @@
                                 <div class="ticket-no text-center" style="font-size: clamp(2.8rem, 8vw, 4.2rem);">{{ $visit->queue->queue_no }}</div>
                             </div>
                             <div class="col-lg-7">
-                                <div class="fw-semibold fs-4 mb-1">{{ $visit->patient->full_name }}</div>
+                                <div class="fw-semibold fs-4 mb-1">{{ $visit->patient?->full_name ?? 'Unknown Patient' }}</div>
                                 <div class="text-body-tertiary mb-2">
-                                    {{ $visit->patient->gender }} · {{ \Carbon\Carbon::parse($visit->patient->birth_date)->age }} years old · {{ $visit->queue->service->service_name }}
+                                    {{-- ✅ Fixed --}}
+                                    {{ $visit->patient?->gender ?? 'N/A' }} · 
+                                    {{ $visit->patient?->birth_date ? \Carbon\Carbon::parse($visit->patient->birth_date)->age : 'N/A' }} years old · 
+                                    {{ $visit->queue?->service?->service_name ?? 'N/A' }}
                                 </div>
                                 <div class="d-flex flex-wrap gap-2">
                                     <span class="subtle-chip">Assigned at {{ $visit->visit_date->format('h:i A') }}</span>
@@ -72,7 +79,13 @@
                                 </div>
                             </div>
                             <div class="col-lg-3 text-lg-end">
-                                <a href="{{ route('visits.consultation', $visit->queue_id) }}" class="btn btn-primary px-4">Open Consultation</a>
+                                <a href="{{ route('visits.consultation', $visit->queue_id) }}" class="btn btn-primary px-4 mb-2">Open Consultation</a>
+                                @if($visit->notes && $visit->diagnosis)
+                                <br>
+                                <a href="{{ route('visits.clinical-notes', $visit->id) }}" target="_blank" class="btn btn-outline-success btn-sm mt-2">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i>Patient Copy
+                                </a>
+                                @endif
                             </div>
                         </div>
                     </div>

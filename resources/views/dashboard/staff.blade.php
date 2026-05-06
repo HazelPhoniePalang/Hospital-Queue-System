@@ -87,8 +87,9 @@
                                 <tr>
                                     <td class="fw-bold">{{ $q->queue_no }}</td>
                                     <td>
-                                        <div class="fw-semibold">{{ $q->patient->full_name }}</div>
-                                        <div class="text-body-tertiary small">{{ $q->patient->contact_no }}</div>
+                                        <div class="fw-semibold">{{ $q->patient?->first_name }} {{ $q->patient?->last_name }}</div>
+                                        <div class="text-body-tertiary small">{{ $q->patient?->contact_no ?? 'N/A' }}</div>
+
                                     </td>
                                     <td>
                                         <div class="fw-semibold">{{ $q->service->service_name }}</div>
@@ -154,8 +155,9 @@
                                 <tr>
                                     <td class="fw-bold">{{ $q->queue_no }}</td>
                                     <td>
-                                        <div class="fw-semibold">{{ $q->patient->full_name }}</div>
-                                        <div class="text-body-tertiary small">{{ $q->patient->contact_no }}</div>
+                                        {{-- ✅ Fix --}}
+                                        <div class="fw-semibold">{{ $q->patient?->first_name }} {{ $q->patient?->last_name }}</div>
+                                        <div class="text-body-tertiary small">{{ $q->patient?->contact_no ?? 'N/A' }}</div>
                                     </td>
                                     <td>
                                         <div class="fw-semibold">{{ $q->service->service_name }}</div>
@@ -213,8 +215,8 @@
                                 <tr>
                                     <td class="fw-bold">{{ $q->queue_no }}</td>
                                     <td>
-                                        <div class="fw-semibold">{{ $q->patient->full_name }}</div>
-                                        <div class="text-body-tertiary small">{{ $q->patient->contact_no }}</div>
+                                        <div class="fw-semibold">{{ $q->patient?->first_name }} {{ $q->patient?->last_name }}</div>
+                                        <div class="text-body-tertiary small">{{ $q->patient?->contact_no ?? 'N/A' }}</div>
                                     </td>
                                     <td>
                                         <div class="fw-semibold">{{ $q->department->name }}</div>
@@ -235,7 +237,7 @@
             </div>
         </div>
 
-        <div class="col-lg-12">
+        <!-- <div class="col-lg-12">
             <div class="row g-4">
                 <div class="col-lg-4">
                     <div class="glass-panel p-4 h-100">
@@ -279,7 +281,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

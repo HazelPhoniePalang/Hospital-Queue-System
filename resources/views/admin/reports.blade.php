@@ -57,18 +57,8 @@
         </form>
 
         <div class="d-flex gap-2 mt-4 pt-3 border-top">
-            <form action="{{ route('admin.reports.export') }}" method="GET" class="d-flex gap-2">
-                <input type="hidden" name="type" value="{{ $type }}">
-                <input type="hidden" name="department" value="{{ $departmentId }}">
-                <input type="hidden" name="status" value="{{ $status }}">
-                <input type="hidden" name="start_date" value="{{ $startDate }}">
-                <input type="hidden" name="end_date" value="{{ $endDate }}">
-                <input type="hidden" name="format" value="csv">
-                <button type="submit" class="btn btn-outline-dark">
-                    <i class="bi bi-download me-2"></i>Export CSV
-                </button>
-            </form>
-            <form action="{{ route('admin.reports.export') }}" method="GET" class="d-flex gap-2">
+            
+            <form action="{{ route('admin.reports.export') }}" method="GET" target="_blank" class="d-flex gap-2">
                 <input type="hidden" name="type" value="{{ $type }}">
                 <input type="hidden" name="department" value="{{ $departmentId }}">
                 <input type="hidden" name="status" value="{{ $status }}">
@@ -104,9 +94,9 @@
                         @forelse($queues as $q)
                             <tr>
                                 <td class="fw-semibold">{{ $q->queue_no }}</td>
-                                <td>{{ $q->patient?->name ?? 'N/A' }}</td>
+                                <td>{{ $q->patient?->first_name . ' ' . $q->patient?->last_name ?? 'N/A' }}</td>
                                 <td>{{ $q->department?->name ?? 'N/A' }}</td>
-                                <td>{{ $q->service?->name ?? 'N/A' }}</td>
+                                <td>{{ $q->service?->service_name ?? 'N/A' }}</td>
                                 <td>
                                     @switch($q->status)
                                         @case('pending')
@@ -155,7 +145,7 @@
                         @forelse($queues as $p)
                             <tr>
                                 <td class="fw-semibold">#{{ $p->getKey() }}</td>
-                                <td>{{ $p->patient?->name ?? 'N/A' }}</td>
+                                <td>{{ $p->patient?->first_name . ' ' . $p->patient?->last_name ?? 'N/A' }}</td>
                                 <td>{{ $p->queue?->queue_no ?? 'N/A' }}</td>
                                 <td>₱{{ number_format($p->amount, 2) }}</td>
                                 <td>{{ ucfirst($p->payment_method) }}</td>
@@ -193,7 +183,7 @@
                         @forelse($queues as $v)
                             <tr>
                                 <td class="fw-semibold">#{{ $v->getKey() }}</td>
-                                <td>{{ $v->queue?->patient?->name ?? 'N/A' }}</td>
+                                <td>{{ $v->queue?->patient?->first_name . ' ' . $v->queue?->patient?->last_name ?? 'N/A' }}</td>
                                 <td>{{ $v->queue?->queue_no ?? 'N/A' }}</td>
                                 <td>{{ Str::limit($v->doctor_notes, 50) }}</td>
                                 <td>{{ $v->diagnosis ?? '-' }}</td>

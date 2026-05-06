@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PatientKioskController;
+use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ReportController;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect()->route('kiosk.index');
 });
+
+Route::view('/about', 'about')->name('about');
 
 // Patient Kiosk Routes (Public)
 Route::prefix('kiosk')->name('kiosk.')->group(function () {
@@ -63,33 +66,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/consultation/{queue_id}', [VisitController::class, 'show'])->name('consultation');
         Route::post('/store/{queue_id}', [VisitController::class, 'store'])->name('store');
         Route::get('/download-pdf/{filename}', [VisitController::class, 'downloadPdf'])->name('download-pdf');
+        Route::get('/{visit}/clinical-notes', [VisitController::class, 'downloadClinicalNotes'])->name('clinical-notes');
     });
 
     // Admin Actions
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/patients', [AdminController::class, 'patients'])->name('patients');
+        Route::get('/patients/archive', [AdminController::class, 'archivedPatients'])->name('patients.archive');
+        Route::post('/patients', [AdminController::class, 'storePatient'])->name('patients.store');
+        Route::put('/patients/{id}', [AdminController::class, 'updatePatient'])->name('patients.update');
+        Route::delete('/patients/{id}', [AdminController::class, 'deletePatient'])->name('patients.delete');
+        Route::post('/patients/{id}/restore', [AdminController::class, 'restorePatient'])->name('patients.restore');
+
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/archive', [AdminController::class, 'archivedUsers'])->name('users.archive');
         Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
         Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('users.update');
         Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
+        Route::post('/users/{id}/restore', [AdminController::class, 'restoreUser'])->name('users.restore');
 
         Route::get('/departments', [AdminController::class, 'departments'])->name('departments');
+        Route::get('/departments/archive', [AdminController::class, 'archivedDepartments'])->name('departments.archive');
         Route::post('/departments', [AdminController::class, 'storeDepartment'])->name('departments.store');
         Route::put('/departments/{id}', [AdminController::class, 'updateDepartment'])->name('departments.update');
         Route::delete('/departments/{id}', [AdminController::class, 'deleteDepartment'])->name('departments.delete');
+        Route::post('/departments/{id}/restore', [AdminController::class, 'restoreDepartment'])->name('departments.restore');
 
         Route::get('/services', [AdminController::class, 'services'])->name('services');
+        Route::get('/services/archive', [AdminController::class, 'archivedServices'])->name('services.archive');
         Route::post('/services', [AdminController::class, 'storeService'])->name('services.store');
         Route::put('/services/{id}', [AdminController::class, 'updateService'])->name('services.update');
         Route::delete('/services/{id}', [AdminController::class, 'deleteService'])->name('services.delete');
+        Route::post('/services/{id}/restore', [AdminController::class, 'restoreService'])->name('services.restore');
 
         Route::get('/counters', [AdminController::class, 'counters'])->name('counters');
+        Route::get('/counters/archive', [AdminController::class, 'archivedCounters'])->name('counters.archive');
         Route::post('/counters', [AdminController::class, 'storeCounter'])->name('counters.store');
         Route::put('/counters/{id}', [AdminController::class, 'updateCounter'])->name('counters.update');
         Route::delete('/counters/{id}', [AdminController::class, 'deleteCounter'])->name('counters.delete');
+        Route::post('/counters/{id}/restore', [AdminController::class, 'restoreCounter'])->name('counters.restore');
 
         // Reports
         Route::get('/reports', [ReportController::class, 'index'])->name('reports');
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+        // User PDF Exports by Role
+        Route::get('/users/export/{role?}', [PDFController::class, 'exportUsers'])
+            ->name('users.export.pdf');
     });
 });
 

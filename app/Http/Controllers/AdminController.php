@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Counter;
 use App\Models\Department;
+use App\Models\Patient;
 use App\Models\Role;
 use App\Models\Service;
 use App\Models\User;
@@ -12,6 +13,83 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    // Patient Management
+    public function patients()
+    {
+        $patients = Patient::withCount(['queues', 'visits'])
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        return view('admin.patients', compact('patients'));
+    }
+
+    public function storePatient(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before_or_equal:today'],
+            'gender' => ['required', 'string', 'max:30'],
+            'contact_no' => ['nullable', 'string', 'max:40'],
+            'address' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        Patient::create($validated);
+
+        return back()->with('success', 'Patient created successfully.');
+    }
+
+    public function updatePatient(Request $request, $id)
+    {
+        $patient = Patient::findOrFail($id);
+
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before_or_equal:today'],
+            'gender' => ['required', 'string', 'max:30'],
+            'contact_no' => ['nullable', 'string', 'max:40'],
+            'address' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $patient->update($validated);
+
+        return back()->with('success', 'Patient updated successfully.');
+    }
+
+    public function deletePatient($id)
+    {
+        Patient::findOrFail($id)->delete();
+
+        return back()->with('success', 'Patient archived successfully.');
+    }
+
+    public function archivedPatients()
+    {
+        $items = Patient::onlyTrashed()
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.archive', [
+            'title' => 'Archived patients',
+            'eyebrow' => 'Patient Archive',
+            'description' => 'Patient records moved out of the active patient list.',
+            'backRoute' => route('admin.patients'),
+            'restoreRouteName' => 'admin.patients.restore',
+            'items' => $items,
+            'columns' => ['Patient', 'Birth Date', 'Contact'],
+            'type' => 'patients',
+        ]);
+    }
+
+    public function restorePatient($id)
+    {
+        Patient::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', 'Patient restored successfully.');
+    }
+
     // User Management
     public function users()
     {
@@ -130,9 +208,37 @@ class AdminController extends Controller
 
     public function deleteUser($id)
     {
-        User::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+        Counter::where('assigned_staff_id', $user->getKey())->update(['assigned_staff_id' => null]);
+        $user->delete();
 
-        return back()->with('success', 'User deleted successfully.');
+        return back()->with('success', 'User archived successfully.');
+    }
+
+    public function archivedUsers()
+    {
+        $items = User::onlyTrashed()
+            ->with(['role', 'department'])
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.archive', [
+            'title' => 'Archived users',
+            'eyebrow' => 'User Archive',
+            'description' => 'User accounts moved out of active staff, doctor, and admin lists.',
+            'backRoute' => route('admin.users'),
+            'restoreRouteName' => 'admin.users.restore',
+            'items' => $items,
+            'columns' => ['Name', 'Email', 'Role'],
+            'type' => 'users',
+        ]);
+    }
+
+    public function restoreUser($id)
+    {
+        User::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', 'User restored successfully.');
     }
 
     // Department Management
@@ -175,7 +281,33 @@ class AdminController extends Controller
     {
         Department::findOrFail($id)->delete();
 
-        return back()->with('success', 'Department deleted successfully.');
+        return back()->with('success', 'Department archived successfully.');
+    }
+
+    public function archivedDepartments()
+    {
+        $items = Department::onlyTrashed()
+            ->withCount('services')
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.archive', [
+            'title' => 'Archived departments',
+            'eyebrow' => 'Department Archive',
+            'description' => 'Departments moved out of active registration and routing lists.',
+            'backRoute' => route('admin.departments'),
+            'restoreRouteName' => 'admin.departments.restore',
+            'items' => $items,
+            'columns' => ['Department', 'Code', 'Location'],
+            'type' => 'departments',
+        ]);
+    }
+
+    public function restoreDepartment($id)
+    {
+        Department::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', 'Department restored successfully.');
     }
 
     // Service Management
@@ -221,7 +353,33 @@ class AdminController extends Controller
     {
         Service::findOrFail($id)->delete();
 
-        return back()->with('success', 'Service deleted successfully.');
+        return back()->with('success', 'Service archived successfully.');
+    }
+
+    public function archivedServices()
+    {
+        $items = Service::onlyTrashed()
+            ->with(['department'])
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.archive', [
+            'title' => 'Archived services',
+            'eyebrow' => 'Service Archive',
+            'description' => 'Services and prices moved out of active queue registration.',
+            'backRoute' => route('admin.services'),
+            'restoreRouteName' => 'admin.services.restore',
+            'items' => $items,
+            'columns' => ['Service', 'Department', 'Price'],
+            'type' => 'services',
+        ]);
+    }
+
+    public function restoreService($id)
+    {
+        Service::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', 'Service restored successfully.');
     }
 
     // Counter Management
@@ -281,8 +439,42 @@ class AdminController extends Controller
 
     public function deleteCounter($id)
     {
-        Counter::findOrFail($id)->delete();
+        $counter = Counter::findOrFail($id);
+        $counter->update([
+            'assigned_staff_id' => null,
+            'current_queue_id' => null,
+            'status' => 'unavailable',
+        ]);
+        $counter->delete();
 
-        return back()->with('success', 'Counter deleted successfully.');
+        return back()->with('success', 'Counter archived successfully.');
+    }
+
+    public function archivedCounters()
+    {
+        $items = Counter::onlyTrashed()
+            ->with(['department'])
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.archive', [
+            'title' => 'Archived counters',
+            'eyebrow' => 'Counter Archive',
+            'description' => 'Counters moved out of active queue assignment.',
+            'backRoute' => route('admin.counters'),
+            'restoreRouteName' => 'admin.counters.restore',
+            'items' => $items,
+            'columns' => ['Counter', 'Department', 'Status'],
+            'type' => 'counters',
+        ]);
+    }
+
+    public function restoreCounter($id)
+    {
+        $counter = Counter::onlyTrashed()->findOrFail($id);
+        $counter->restore();
+        $counter->update(['status' => 'ready']);
+
+        return back()->with('success', 'Counter restored successfully.');
     }
 }

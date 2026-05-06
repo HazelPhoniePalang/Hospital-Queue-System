@@ -5,9 +5,9 @@
     <title>Receipt - {{ $payment->id }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Courier New', monospace; 
-            font-size: 12px; 
+        body {
+            font-family: 'Courier', monospace;
+            font-size: 12px;
             line-height: 1.4;
             color: #333;
             padding: 20px;

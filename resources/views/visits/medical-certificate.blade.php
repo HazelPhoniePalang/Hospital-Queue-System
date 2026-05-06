@@ -5,9 +5,9 @@
     <title>Medical Certificate</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Georgia', serif; 
-            font-size: 14px; 
+        body {
+            font-family: 'Times', serif;
+            font-size: 14px;
             line-height: 1.6;
             color: #333;
             padding: 40px;

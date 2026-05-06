@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\QueueEntry;
 use App\Models\Visit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,7 @@ class VisitController extends Controller
 
     public function store(Request $request, $queue_id)
     {
-        $queue = QueueEntry::findOrFail($queue_id);
+        $queue = QueueEntry::with(['patient', 'department', 'service'])->findOrFail($queue_id);
 
         $validated = $request->validate([
             'notes' => 'required|string',
@@ -51,16 +52,21 @@ class VisitController extends Controller
             ]
         );
 
+        // Generate Medical Certificate PDF using DomPDF
         $patient = $queue->patient;
         $department = $queue->department;
         $service = $queue->service;
 
-        $pdfContent = view('visits.medical-certificate', compact('visit', 'queue', 'patient', 'department', 'service'))->render();
+        $pdf = Pdf::loadView('visits.medical-certificate', compact('visit', 'queue', 'patient', 'department', 'service'));
 
         $filename = 'medical-certificate-'.$visit->id.'.pdf';
-        file_put_contents(storage_path('app/'.$filename), $pdfContent);
+        $path = storage_path('app/'.$filename);
+        file_put_contents($path, $pdf->output());
 
-        return redirect()->route('dashboard')->with('success', 'Visit record saved successfully.')->with('download_pdf', $filename);
+        return redirect()->route('dashboard')
+            ->with('success', 'Visit record saved successfully.')
+            ->with('download_pdf', $filename)
+            ->with('visit_id', $visit->id);
     }
 
     public function downloadPdf($filename)
@@ -72,5 +78,25 @@ class VisitController extends Controller
         }
 
         return response()->download($path);
+    }
+
+    /**
+     * Download Clinical Notes & Diagnosis PDF for patient copy
+     */
+    public function downloadClinicalNotes($visitId)
+    {
+        $visit = Visit::with(['queue.patient', 'queue.department', 'queue.service', 'doctor'])->findOrFail($visitId);
+
+        // Ensure the logged-in user is authorized (doctor who created visit or admin/staff)
+        $user = auth()->user();
+        if ($user->role->name === 'Doctor' && $visit->doctor_id !== $user->id) {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to access this record.');
+        }
+
+        $pdf = Pdf::loadView('visits.clinical-notes-pdf', compact('visit'));
+
+        $filename = 'clinical-notes-'.$visit->id.'.pdf';
+
+        return $pdf->download($filename);
     }
 }

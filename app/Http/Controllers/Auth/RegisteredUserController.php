@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -27,13 +26,9 @@ class RegisteredUserController extends Controller
     {
         $roleKeyColumn = $this->roleKeyColumn();
         $roleNameColumn = $this->roleNameColumn();
-        $departmentKeyColumn = $this->departmentKeyColumn();
-        $departmentNameColumn = $this->departmentNameColumn();
 
         foreach ([
-            ['name' => 'Admin', 'description' => 'System Administrator'],
-            ['name' => 'Hospital Staff', 'description' => 'Hospital Staff'],
-            ['name' => 'Doctor', 'description' => 'Medical Professional'],
+            ['name' => 'Administrator', 'description' => 'System Administrator'],
         ] as $roleData) {
             $exists = DB::table('roles')->where($roleNameColumn, $roleData['name'])->exists();
 
@@ -53,17 +48,11 @@ class RegisteredUserController extends Controller
                 DB::raw("{$roleKeyColumn} as id"),
                 DB::raw("{$roleNameColumn} as name"),
             ])
-            ->whereIn($roleNameColumn, ['Admin', 'Hospital Staff', 'Doctor'])
+            ->whereIn($roleNameColumn, ['Administrator', 'Admin'])
             ->orderBy($roleNameColumn)
             ->get();
 
-        $departments = DB::table('departments')
-            ->select([
-                DB::raw("{$departmentKeyColumn} as id"),
-                DB::raw("{$departmentNameColumn} as name"),
-            ])
-            ->orderBy($departmentNameColumn)
-            ->get();
+        $departments = collect(); // No departments for admin
 
         return view('auth.register', compact('roles', 'departments'));
     }
@@ -77,10 +66,9 @@ class RegisteredUserController extends Controller
     {
         $roleKeyColumn = $this->roleKeyColumn();
         $roleNameColumn = $this->roleNameColumn();
-        $departmentKeyColumn = $this->departmentKeyColumn();
 
         $allowedRoleIds = DB::table('roles')
-            ->whereIn($roleNameColumn, ['Admin', 'Hospital Staff', 'Doctor'])
+            ->whereIn($roleNameColumn, ['Administrator', 'Admin'])
             ->pluck($roleKeyColumn)
             ->all();
 
@@ -89,7 +77,6 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role_id' => ['required', "exists:roles,{$roleKeyColumn}", Rule::in($allowedRoleIds)],
-            'department_id' => ['nullable', "exists:departments,{$departmentKeyColumn}"],
         ]);
 
         $selectedRole = DB::table('roles')
@@ -104,9 +91,9 @@ class RegisteredUserController extends Controller
 
         $selectedRoleName = $selectedRole->{$roleNameColumn} ?? null;
 
-        if ($selectedRoleName === 'Doctor' && empty($validated['department_id'])) {
+        if (!in_array($selectedRoleName, ['Administrator', 'Admin'], true)) {
             throw ValidationException::withMessages([
-                'department_id' => 'Department is required for doctor accounts.',
+                'role_id' => 'Only administrator accounts can be registered.',
             ]);
         }
 
@@ -115,15 +102,17 @@ class RegisteredUserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role_id' => $validated['role_id'],
-            'department_id' => $validated['department_id'] ?? null,
+            'department_id' => null,
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()
+            ->route('login')
+            ->with('success', 'Administrator account created successfully. Please log in.');
     }
+
+
 
     private function roleNameColumn(): string
     {

@@ -7,22 +7,23 @@ use App\Models\Payment;
 use App\Models\QueueEntry;
 use App\Models\User;
 use App\Models\Visit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QueueController extends Controller
 {
-
     public function allQueueDetails()
-{
-    // Integrate at least ONE procedure or VIEW into your system
-    $queues = DB::table('patient_queue_details')
-                ->orderBy('queue_created', 'desc')
-                ->get();
-    
-    return view('queue.all', compact('queues'));
-}
+    {
+        // Integrate at least ONE procedure or VIEW into your system
+        $queues = DB::table('patient_queue_details')
+            ->orderBy('queue_created', 'desc')
+            ->get();
+
+        return view('queue.all', compact('queues'));
+    }
 
     public function call(Request $request, $id)
     {
@@ -80,11 +81,19 @@ class QueueController extends Controller
             return back()->with('error', 'Invalid queue status for payment.');
         }
 
+        // Validate that the submitted amount matches the service cost
+        $serviceCost = (float) $queue->service->cost;
+        $submittedAmount = (float) $validated['amount'];
+        
+        if (abs($submittedAmount - $serviceCost) > 0.001) { // Allow for floating point precision differences
+            return back()->with('error', 'Invalid payment amount. Please verify the amount due.');
+        }
+
         // Create payment record
         $payment = Payment::create([
             'queue_id' => $queue->getKey(),
             'patient_id' => $queue->patient_id,
-            'amount' => $validated['amount'],
+            'amount' => $submittedAmount,
             'payment_method' => $validated['payment_method'],
             'status' => 'completed',
             'paid_at' => Carbon::now(),
@@ -110,21 +119,21 @@ class QueueController extends Controller
 
     public function paymentReceipt($paymentId)
     {
-        $payment = Payment::with(['queue.patient', 'queue.service', 'queue.department'])->findOrFail($paymentId);
+        $payment = Payment::with(['patient', 'queue.patient', 'queue.service', 'queue.department'])->findOrFail($paymentId);
 
         return view('payment.receipt', compact('payment'));
     }
 
     public function exportReceiptPdf($paymentId)
     {
-        $payment = Payment::with(['queue.patient', 'queue.service', 'queue.department'])->findOrFail($paymentId);
+        $payment = Payment::with(['patient', 'queue.patient', 'queue.service', 'queue.department'])->findOrFail($paymentId);
 
-        $html = view('payment.receipt-pdf', compact('payment'))->render();
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('payment.receipt-pdf', compact('payment'));
 
         $filename = 'receipt-'.$payment->id.'.pdf';
-        file_put_contents(storage_path('app/'.$filename), $html);
 
-        return response()->download(storage_path('app/'.$filename));
+        return $pdf->download($filename);
     }
 
     public function assignDoctor(Request $request, $id)
@@ -136,24 +145,21 @@ class QueueController extends Controller
         $queue = QueueEntry::findOrFail($id);
         $doctor = User::findOrFail($validated['doctor_id']);
 
-        // Ensure doctor is in the same department and has doctor role
         if ($doctor->role->name !== 'Doctor' || $doctor->department_id !== $queue->department_id) {
             return back()->with('error', 'Invalid doctor assignment.');
         }
 
-        // Create visit
-        Visit::create([
-            'visit_date' => Carbon::now(),
-            'patient_id' => $queue->patient_id,
-            'doctor_id' => $doctor->id,
-            'queue_id' => $queue->id,
-            'status' => 'ongoing',
-        ]);
+        Visit::updateOrCreate(
+            ['queue_id' => $queue->id],
+            [
+                'visit_date' => now(),
+                'patient_id' => $queue->patient_id,
+                'doctor_id'  => $doctor->id,  // ✅ fixed
+                'status'     => 'ongoing',
+            ]
+        );
 
-        // Update queue status
-        $queue->update([
-            'status' => 'assigned_to_doctor',
-        ]);
+        $queue->update(['status' => 'assigned_to_doctor']);
 
         return back()->with('success', "Patient assigned to Dr. {$doctor->name}");
     }

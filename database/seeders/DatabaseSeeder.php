@@ -168,7 +168,10 @@ class DatabaseSeeder extends Seeder
 
         // 6. Insert sample data for empty tables
         $this->call([
+            AdminUserSeeder::class,
             InsertSampleDataSeeder::class,
+            DepartmentSeeder::class,
+            ServiceSeeder::class,
         ]);
     }
 }

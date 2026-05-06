@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Hospital Queue Management System') }}</title>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600,700&family=manrope:400,500,600,700,800&display=swap" rel="stylesheet" />
 
@@ -17,22 +19,47 @@
     <!-- Custom CSS -->
     <style>
     :root {
-        --bg: #f4f1ea;
-        --bg-soft: #ede7dc;
-        --surface: rgba(255, 255, 255, 0.86);
-        --surface-strong: #ffffff;
-        --surface-dark: #111111;
-        --surface-dark-soft: #1b1b1b;
+        /* Color Palette - Sage Green & Black */
+        --sage-50: #f6f7f4;
+        --sage-100: #e8ebe3;
+        --sage-200: #d4d8c9;
+        --sage-300: #b5c0a0;
+        --sage-400: #94a57e;
+        --sage-500: #7a8b66;      /* Primary Sage */
+        --sage-600: #637150;
+        --sage-700: #4f5c42;
+        --sage-800: #424b39;
+        --sage-900: #353e2e;
+
+        --black: #111111;
+        --gray: #808080;
+        --black-soft: #1a1a1a;
+        --black-softest: #282828;
+        --white: #ffffff;
+
+        /* Semantic colors */
+        --success: #166534;
+        --success-soft: rgba(22, 101, 52, 0.12);
+        --warning: #b7791f;
+        --warning-soft: rgba(183, 121, 31, 0.15);
+        --danger: #991b1b;
+        --danger-soft: rgba(153, 27, 27, 0.14);
+
+        /* Palette mapping */
+        --bg: var(--sage-50);
+        --bg-soft: var(--sage-100);
+        --surface: rgba(255, 255, 255, 0.92);
+        --surface-strong: var(--white);
+        --surface-dark: var(--black);
+        --surface-dark-soft: var(--black-soft);
         --border: rgba(17, 17, 17, 0.1);
         --border-strong: rgba(17, 17, 17, 0.16);
-        --text: #151515;
-        --text-soft: #5d5a55;
-        --accent: #111111;
-        --accent-soft: #282828;
-        --accent-ink: #ffffff;
-        --success-soft: rgba(40, 167, 69, 0.12);
-        --warning-soft: rgba(255, 193, 7, 0.15);
-        --danger-soft: rgba(220, 53, 69, 0.14);
+        --text: var(--black);
+        --text-form: var(--gray);
+        --text-soft: var(--black-soft);
+        --accent: var(--sage-500);
+        --accent-soft: rgba(122, 139, 102, 0.15);
+        --accent-ink: var(--white);
         --shadow: 0 24px 70px rgba(17, 17, 17, 0.08);
         --radius-xl: 28px;
         --radius-lg: 22px;
@@ -45,15 +72,15 @@
         background:
             radial-gradient(
                 circle at top left,
-                rgba(17, 17, 17, 0.08),
+                rgba(122, 139, 102, 0.12),
                 transparent 28rem
             ),
             radial-gradient(
                 circle at right center,
-                rgba(17, 17, 17, 0.05),
+                rgba(122, 139, 102, 0.08),
                 transparent 24rem
             ),
-            linear-gradient(180deg, #f8f5ef 0%, var(--bg) 52%, #eee6d8 100%);
+            linear-gradient(180deg, #fafbf8 0%, var(--bg) 52%, #e8ebe3 100%);
         color: var(--text);
         font-family: "Manrope", system-ui, sans-serif;
         overflow-x: hidden;
@@ -76,6 +103,21 @@
         color: inherit;
     }
 
+    main {
+        min-height: calc(100vh - 120px);
+        width: 100%;
+    }
+
+    .display-board {
+        width: 100vw;
+        min-height: 100vh;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 20rem),
+            linear-gradient(180deg, #080808 0%, #171717 100%);
+    }
+
     .app-shell {
         position: relative;
         overflow-x: hidden;
@@ -96,7 +138,7 @@
         right: -6rem;
         width: 22rem;
         height: 22rem;
-        background: rgba(17, 17, 17, 0.08);
+        background: rgba(122, 139, 102, 0.15);
     }
 
     .app-shell::after {
@@ -108,9 +150,10 @@
     }
 
     .site-nav {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(18px);
-        border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+        border-bottom: 1px solid rgba(122, 139, 102, 0.12);
+        z-index: 1030;
     }
 
     .brand-mark {
@@ -120,32 +163,32 @@
         width: 2.75rem;
         height: 2.75rem;
         border-radius: 0.9rem;
-        background: var(--accent);
+        background: linear-gradient(135deg, var(--accent) 0%, var(--sage-600) 100%);
         color: var(--accent-ink);
         font-weight: 800;
         letter-spacing: 0.08em;
-        box-shadow: 0 14px 30px rgba(17, 17, 17, 0.14);
+        box-shadow: 0 14px 30px rgba(122, 139, 102, 0.2);
     }
 
     .app-card,
     .glass-panel {
-        border: 1px solid rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(122, 139, 102, 0.15);
         border-radius: var(--radius-xl);
         background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.93),
-            rgba(255, 255, 255, 0.72)
+            rgba(255, 255, 255, 0.95),
+            rgba(255, 255, 255, 0.75)
         );
         box-shadow: var(--shadow);
     }
 
     .dark-panel {
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(122, 139, 102, 0.2);
         border-radius: var(--radius-xl);
         background: linear-gradient(
             180deg,
-            rgba(17, 17, 17, 0.96),
-            rgba(28, 28, 28, 0.95)
+            var(--black),
+            var(--black-soft)
         );
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
         color: #f8f4eb;
@@ -166,7 +209,7 @@
         content: "";
         width: 2.5rem;
         height: 1px;
-        background: rgba(17, 17, 17, 0.26);
+        background: var(--accent-soft);
     }
 
     .hero-title {
@@ -193,15 +236,26 @@
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, var(--accent) 0%, #2e2e2e 100%);
+        background: linear-gradient(135deg, var(--accent) 0%, var(--sage-600) 100%);
         border-color: transparent;
         color: var(--accent-ink);
-        box-shadow: 0 16px 34px rgba(17, 17, 17, 0.24);
+        box-shadow: 0 16px 34px rgba(122, 139, 102, 0.3);
     }
 
     .btn-primary:hover,
     .btn-primary:focus {
-        background: linear-gradient(135deg, #050505 0%, #242424 100%);
+        background: linear-gradient(135deg, var(--sage-600) 0%, var(--sage-700) 100%);
+        color: var(--accent-ink);
+    }
+
+    .btn-outline-primary {
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-primary:focus {
+        background: var(--accent);
         color: var(--accent-ink);
     }
 
@@ -216,7 +270,7 @@
     .input-group-text,
     textarea.form-control {
         border-radius: var(--radius-sm);
-        border: 1px solid rgba(17, 17, 17, 0.08);
+        border: 1px solid rgba(122, 139, 102, 0.2);
         background: rgba(255, 255, 255, 0.9);
         color: var(--text);
         padding: 0.9rem 1rem;
@@ -224,24 +278,34 @@
 
     .form-control:focus,
     .form-select:focus {
-        border-color: rgba(17, 17, 17, 0.38);
-        box-shadow: 0 0 0 0.2rem rgba(17, 17, 17, 0.08);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.2rem rgba(122, 139, 102, 0.15);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-form);
     }
 
     .table {
         --bs-table-bg: transparent;
-        --bs-table-hover-bg: rgba(17, 17, 17, 0.035);
+        --bs-table-hover-bg: rgba(122, 139, 102, 0.05);
     }
 
     .table > :not(caption) > * > * {
-        border-bottom-color: rgba(17, 17, 17, 0.06);
+        border-bottom-color: rgba(122, 139, 102, 0.1);
     }
 
     .metric-card {
         padding: 1.6rem;
         border-radius: var(--radius-lg);
-        border: 1px solid rgba(17, 17, 17, 0.08);
-        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(122, 139, 102, 0.12);
+        background: rgba(255, 255, 255, 0.75);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 32px 80px rgba(122, 139, 102, 0.15);
     }
 
     .metric-value {
@@ -250,57 +314,52 @@
         line-height: 1;
     }
 
-    .subtle-chip,
-    .status-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 0.9rem;
-        border-radius: 999px;
-        font-size: 0.74rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-    }
-
     .subtle-chip {
-        background: rgba(17, 17, 17, 0.06);
+        background: var(--accent-soft);
         color: var(--text);
+        border: 1px solid rgba(122, 139, 102, 0.2);
     }
 
     .status-chip.waiting {
-        background: rgba(17, 17, 17, 0.08);
+        background: var(--bg-soft);
         color: var(--text);
+        border: 1px solid var(--sage-200);
     }
 
     .status-chip.ready {
-        background: rgba(17, 17, 17, 0.08);
-        color: var(--text);
+        background: var(--accent-soft);
+        color: var(--accent);
+        border: 1px solid var(--accent);
     }
 
     .status-chip.busy {
         background: var(--warning-soft);
-        color: #795700;
+        color: var(--warning);
+        border: 1px solid rgba(183, 121, 31, 0.3);
     }
 
     .status-chip.unavailable {
         background: var(--danger-soft);
-        color: #a61d2d;
+        color: var(--danger);
+        border: 1px solid rgba(153, 27, 27, 0.3);
     }
 
     .status-chip.called {
-        background: var(--warning-soft);
-        color: #795700;
+        background: linear-gradient(135deg, var(--sage-100) 0%, var(--sage-200) 100%);
+        color: var(--accent);
+        border: 1px solid var(--sage-300);
     }
 
     .status-chip.completed {
         background: var(--success-soft);
-        color: #166534;
+        color: var(--success);
+        border: 1px solid rgba(22, 101, 52, 0.3);
     }
 
     .status-chip.cancelled {
         background: var(--danger-soft);
-        color: #a61d2d;
+        color: var(--danger);
+        border: 1px solid rgba(153, 27, 27, 0.3);
     }
 
     .ticket-no {
@@ -308,6 +367,24 @@
         line-height: 0.9;
         font-weight: 800;
         color: var(--accent);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .eyebrow::before {
+        content: "";
+        width: 2.5rem;
+        height: 1px;
+        background: var(--accent-soft);
     }
 
     .info-list {
@@ -320,7 +397,7 @@
         justify-content: space-between;
         gap: 1rem;
         padding-bottom: 0.9rem;
-        border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+        border-bottom: 1px solid rgba(122, 139, 102, 0.1);
     }
 
     .info-item:last-child {
@@ -351,7 +428,7 @@
         padding: 1.2rem;
         border-radius: var(--radius-md);
         background: rgba(255, 255, 255, 0.64);
-        border: 1px solid rgba(17, 17, 17, 0.08);
+        border: 1px solid var(--accent-soft);
     }
 
     .queue-board-grid {
@@ -374,8 +451,8 @@
         min-width: 7rem;
         padding: 1.2rem;
         border-radius: 1.4rem;
-        background: linear-gradient(180deg, #f4efe4, #ddd2bf);
-        color: #111111;
+        background: linear-gradient(180deg, var(--sage-50), var(--sage-100));
+        color: var(--accent);
         text-align: center;
     }
 
@@ -383,11 +460,12 @@
         font-size: 2.6rem;
         line-height: 1;
         font-weight: 800;
+        color: var(--accent);
     }
 
     .timeline-note {
         padding: 1rem 0 1rem 1.3rem;
-        border-left: 2px solid rgba(17, 17, 17, 0.14);
+        border-left: 2px solid var(--accent-soft);
     }
 
     .timeline-note + .timeline-note {
@@ -396,28 +474,28 @@
 
     .modal-content {
         border-radius: var(--radius-xl);
-        border: 1px solid rgba(17, 17, 17, 0.08);
+        border: 1px solid var(--accent-soft);
         box-shadow: var(--shadow);
     }
 
     .auth-wrap {
-        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem 1rem;
+        width: 100%;
     }
 
-    .auth-panel {
+   .auth-panel {
         width: min(100%, 1100px);
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
         overflow: hidden;
+        
     }
 
     .auth-side {
         padding: 3rem;
-        background: linear-gradient(160deg, #111111 0%, #232323 55%, #3a362f 100%);
+        background: linear-gradient(160deg, var(--sage-700) 0%, var(--sage-800) 55%, var(--sage-900) 100%);
         color: #f8f4eb;
     }
 
@@ -426,7 +504,8 @@
     }
 
     .footer-note {
-        color: rgba(17, 17, 17, 0.56);
+        color: var(--accent);
+        opacity: 0.7;
         font-size: 0.9rem;
     }
 
@@ -438,7 +517,7 @@
 
     .floating-note {
         border-radius: var(--radius-md);
-        background: rgba(17, 17, 17, 0.05);
+        background: var(--accent-soft);
         padding: 1rem 1.1rem;
     }
 
@@ -468,9 +547,9 @@
         <nav class="navbar navbar-expand-md site-nav sticky-top">
             <div class="container py-1">  
                 <a class="navbar-brand d-flex align-items-center gap-3 fw-semibold" href="{{ auth()->check() ? route('dashboard') : route('kiosk.index') }}">
-                    <span class="brand-mark">XYZ</span>
+                    <span class="brand-mark">PH</span>
                     <span>
-                        <span class="d-block lh-1">XYZ Hospital</span>
+                        <span class="d-block lh-1">Palang Hospital</span>
                     </span>
                 </a>
                 <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav">
@@ -480,38 +559,48 @@
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 px-1">
                         @auth
                             <li class="nav-item">
-                                <a class="nav-link px-1" href="{{ route('dashboard') }}">Dashboard</a>
+                                <a class="nav-link m-2 fw-semibold" href="{{ route('dashboard') }}">Dashboard</a>
                             </li>
-                             @if(auth()->user()->role?->name === 'Admin')
+                            
+                             @if(in_array(auth()->user()->role?->name, ['Administrator', 'Admin'], true))
                                  <li class="nav-item">
-                                     <a class="nav-link mx-3" href="{{ route('admin.departments') }}">Departments</a>
+                                     <a class="nav-link m-2" href="{{ route('admin.departments') }}">Departments</a>
                                  </li>
                                  <li class="nav-item">
-                                     <a class="nav-link mx-3" href="{{ route('admin.counters') }}">Counters</a>
+                                     <a class="nav-link m-2" href="{{ route('admin.counters') }}">Counters</a>
                                  </li>
                                  <li class="nav-item">
-                                     <a class="nav-link mx-3" href="{{ route('admin.services') }}">Pricing</a>
+                                     <a class="nav-link m-2" href="{{ route('admin.services') }}">Services</a>
                                  </li>
                                  <li class="nav-item">
-                                     <a class="nav-link mx-3" href="{{ route('admin.users') }}">Users</a>
+                                     <a class="nav-link m-2" href="{{ route('admin.users') }}">Users</a>
                                  </li>
-                             @endif
+                                 
+                                 <li class="nav-item">
+                                     <a class="nav-link m-2" href="{{ route('admin.patients') }}">Patients</a>
+                                 </li>
+                                 
+                              @endif
                             <li class="nav-item">
-                                <span class="subtle-chip">{{ auth()->user()->name }} · {{ auth()->user()->role?->name ?? 'User' }}</span>
+                                <span class="subtle-chip m-2">{{ auth()->user()->role?->name ?? 'User' }} · {{ auth()->user()->name }}  </span>
                             </li>
                             <li class="nav-item">
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-dark btn-sm px-3">Log Out</button>
+                                    <button type="submit" class="btn btn-outline-dark btn-sm m-2">Log Out</button>
                                 </form>
                             </li>
                         @else
                             <li class="nav-item">
-                                <a class="nav-link " href="{{ route('kiosk.index') }}">Home</a>
+                                <a class="nav-link m-2 {{ request()->routeIs('kiosk.*') ? 'fw-semibold' : '' }}" href="{{ route('kiosk.index') }}">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link mx-3" href="{{ route('display') }}">Queue Display</a>
+                                <a class="nav-link m-2 {{ request()->routeIs('about') ? 'fw-semibold' : '' }}" href="{{ route('about') }}">About</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link m-2 {{ request()->routeIs('display') ? 'fw-semibold' : '' }}" href="{{ route('display') }}">Queue Display</a>
+                            </li>
+                            
                             <li class="nav-item">
                                 <a class="btn btn-primary btn-sm px-4" href="{{ route('login') }}">Staff Login</a>
                             </li>

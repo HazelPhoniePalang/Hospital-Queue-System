@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5" style= "min-height: 100vh; background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 20rem), linear-gradient(180deg, #080808 0%, #171717 100%); ">
+<div class="container py-2" style= "min-height: 100vh;  linear-gradient(180deg, #080808 0%, #171717 100%); ">
     <div class="auth-panel app-card mx-auto">
         <div class="auth-side">
             <span class="eyebrow text-white-50 mb-3">Hospital Staff Access</span>
@@ -30,8 +30,7 @@
         <div class="auth-form">
             <span class="eyebrow mb-3">Login</span>
             <h2 class="section-title mb-3">Enter your account credentials</h2>
-            <p class="lede mb-5">If the username or password is incorrect, the system will keep you on this page and show the validation error.</p>
-            
+            <br>            
 
             <form action="{{ route('login') }}" method="POST">
                 @csrf
@@ -63,10 +62,20 @@
                         <input type="checkbox" id="remember" name="remember" class="form-check-input">
                         <label for="remember" class="form-check-label text-body-tertiary">Remember me</label>
                     </div>
-                    <a href="{{ route('password.request') }}" class="text-decoration-none small">Forgot password?</a>
+                    <div>
+                        <a href="{{ route('password.request') }}" class="text-decoration-none small me-3">Forgot password?</a>
+                        
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-lg w-100">Log In</button>
+
+                <div class="text-center mt-3">
+                     <span class="text-body-tertiary small">
+                          Need to create an admin account?
+                          <a href="{{ route('register') }}" class="text-decoration-none small">Register here</a>
+                      </span>
+                  </div>
             </form>
         </div>
     </div>

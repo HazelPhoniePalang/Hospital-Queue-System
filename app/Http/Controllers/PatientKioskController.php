@@ -26,16 +26,17 @@ class PatientKioskController extends Controller
 
     public function store(Request $request)
     {
+        // Change 'Symptoms' to 'symptoms' in validation
         $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'birth_date' => 'required|date',
-            'gender' => 'required|string|max:30',
-            'contact_no' => 'required|string|max:40',
-            'address' => 'nullable|string',
+            'first_name'    => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
+            'birth_date'    => 'required|date',
+            'gender'        => 'required|string|max:30',
+            'contact_no'    => 'required|string|max:40',
+            'address'       => 'nullable|string',
+            'service_id'    => 'required|exists:services,id',
             'department_id' => 'required|exists:departments,id',
-            'service_id' => 'required|exists:services,id',
-            'symptoms' => 'nullable|string',
+            'symptoms'      => 'nullable|string',  // ✅ lowercase
         ]);
 
         return DB::transaction(function () use ($validated) {
@@ -53,6 +54,7 @@ class PatientKioskController extends Controller
                     'gender' => $validated['gender'],
                     'contact_no' => $validated['contact_no'],
                     'address' => $validated['address'],
+                    'symptoms' => $validated['symptoms'] ?? null,
                 ]);
             }
 
@@ -76,13 +78,13 @@ class PatientKioskController extends Controller
             $queueNo = sprintf('%s-%03d', $dept->code, $nextNumber);
 
             $queue = QueueEntry::create([
-                'queue_no' => $queueNo,
+                'queue_no'       => $queueNo,
                 'priority_level' => 1,
-                'status' => 'waiting',
-                'patient_id' => $patient->id,
-                'department_id' => $dept->id,
-                'service_id' => $validated['service_id'],
-                'symptoms' => $validated['symptoms'] ?? null,
+                'status'         => 'waiting',
+                'patient_id'     => $patient->id,
+                'department_id'  => $dept->id,
+                'service_id'     => $validated['service_id'],
+                'symptoms'       => $validated['symptoms'] ?? null,  // ✅ lowercase
             ]);
 
             return redirect()->route('kiosk.success', $queue->id);

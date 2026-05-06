@@ -81,7 +81,7 @@ return new class extends Migration
             $table->text('diagnosis')->nullable();
             $table->string('status', 30)->default('ongoing');
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('doctor_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('doctor_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('queue_id')->unique()->constrained('queues')->cascadeOnDelete();
             $table->timestamps();
         });

@@ -4,7 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Models\Department;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -18,30 +20,42 @@ class RegistrationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_new_users_can_register(): void
+    public function test_new_admin_can_be_registered(): void
     {
-        $role = Role::create([
-            'name' => 'Hospital Staff',
-            'description' => 'Hospital Staff',
-        ]);
-
-        $department = Department::create([
-            'name' => 'General Medicine',
-            'code' => 'GMED',
-            'description' => 'General medical services',
-            'location' => 'Building A, Floor 1',
+        $adminRole = Role::create([
+            'name' => 'Administrator',
+            'description' => 'System Administrator',
         ]);
 
         $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'New Admin',
+            'email' => 'newadmin@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'role_id' => $role->id,
-            'department_id' => $department->id,
+            'role_id' => $adminRole->id,
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('users', [
+            'name' => 'New Admin',
+            'email' => 'newadmin@example.com',
+            'role_id' => $adminRole->id,
+            'department_id' => null,
+        ]);
+        $response->assertRedirect(route('login', absolute: false));
+    }
+
+    private function adminUser(): User
+    {
+        $adminRole = Role::create([
+            'name' => 'Administrator',
+            'description' => 'System Administrator',
+        ]);
+
+        return User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'role_id' => $adminRole->id,
+        ]);
     }
 }

@@ -54,9 +54,8 @@
                         <label class="form-label fw-semibold">Amount Due</label>
                         <div class="input-group input-group-lg mb-3">
                             <span class="input-group-text">PHP</span>
-                            <input type="text" class="form-control" value="{{ number_format($amount, 2) }}">
+                            <input type="text" class="form-control" value="{{ number_format($amount, 2) }}" name="amount">
                         </div>
-                        <input type="hidden" name="amount" value="{{ $amount }}" required>
                     </div>
 
                     <div class="mb-4">
@@ -82,7 +81,7 @@
                 </form>
             </div>
 
-            <div class="glass-panel p-4">
+            <!-- <div class="glass-panel p-4">
                 <div class="fw-semibold mb-2">Payment Instructions</div>
                 <ul class="small text-body-tertiary mb-0">
                     <li>Verify patient information above</li>
@@ -91,7 +90,7 @@
                     <li>Click "Confirm Payment" to complete the transaction</li>
                     <li>A receipt will be generated automatically</li>
                 </ul>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

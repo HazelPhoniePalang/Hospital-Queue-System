@@ -19,7 +19,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role->name === 'Administrator') {
+        if (in_array($user->role->name, ['Administrator', 'Admin'], true)) {
             return $this->adminDashboard();
         } elseif (in_array($user->role->name, ['Hospital Staff', 'Staff'], true)) {
             return $this->staffDashboard();
@@ -103,12 +103,18 @@ class DashboardController extends Controller
             ->orderBy('visit_date', 'asc')
             ->get();
 
-        $stats = [
+       $stats = [
             'today_patients' => Visit::where('doctor_id', $user->id)
-                ->whereDate('created_at', Carbon::today())
+                ->where('status', 'completed')
+                ->whereDate('visit_date', Carbon::today())
                 ->count(),
+
             'week_patients' => Visit::where('doctor_id', $user->id)
-                ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                ->where('status', 'completed')
+                ->whereBetween('visit_date', [
+                    Carbon::now()->startOfWeek(),
+                    Carbon::now()->endOfWeek()
+                ])
                 ->count(),
         ];
 

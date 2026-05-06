@@ -72,10 +72,18 @@
             <div class="d-grid gap-4">
                 <a href="{{ route('admin.services') }}" class="app-card p-4 text-decoration-none">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="fw-semibold fs-4">Department pricing</div>
+                        <div class="fw-semibold fs-4">Services</div>
                         <i class="bi bi-cash-stack fs-3"></i>
                     </div>
                     <div class="text-body-tertiary">Update service fees that are automatically used during patient registration.</div>
+                </a>
+
+                <a href="{{ route('admin.counters') }}" class="app-card p-4 text-decoration-none">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="fw-semibold fs-4">Counter Assignment</div>
+                        <i class="bi bi-display fs-3"></i>
+                    </div>
+                    <div class="text-body-tertiary">Create and manage counters per department. Assign counters to specific staff members for queue management.</div>
                 </a>
 
                 <a href="{{ route('admin.users') }}" class="app-card p-4 text-decoration-none">

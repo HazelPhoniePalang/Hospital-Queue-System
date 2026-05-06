@@ -8,8 +8,16 @@
             <h1 class="section-title mb-3">Staff, doctor, and admin accounts</h1>
             <p class="lede mb-0">Assign users to the right roles and departments so dashboards and queue permissions stay accurate.</p>
         </div>
-        <div class="d-flex align-items-start">
+        <div class="d-flex align-items-start gap-2">
             <button onclick="new bootstrap.Modal(document.getElementById('user-modal')).show()" class="btn btn-primary px-4">Add User</button>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary px-4 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Export PDF
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{{ route('admin.users.export.pdf') }}">Export All Users</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -31,7 +39,7 @@
                         <tr>
                             <td class="fw-semibold">{{ $u->name }}</td>
                             <td>{{ $u->email }}</td>
-                            <td><span class="subtle-chip">{{ $u->role->name }}</span></td>
+                            <td><span class="subtle-chip">{{ $u->role->name ?? 'Not assigned' }}</span></td>
                             <td>{{ $u->department->name ?? 'Not assigned' }}</td>
                             <td>
                                 @php
@@ -58,7 +66,7 @@
                                 <form action="{{ route('admin.users.delete', $u->getKey()) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this user?')" title="Delete">🗑️</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Archive this user?')" title="Archive">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -70,6 +78,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ route('admin.users.archive') }}" class="text-decoration-none text-body-tertiary small">View archived users</a>
     </div>
 
     <div class="modal fade" id="user-modal" tabindex="-1">
@@ -163,8 +175,8 @@
         const selectedRole = roleSelect.value;
         const selectedDepartment = departmentSelect.value;
 
-        // Show counter assignment only for Hospital Staff (role_id = 2) and Doctors (role_id = 3)
-        const showCounter = (selectedRole == '2' || selectedRole == '3') && selectedDepartment;
+        // Show counter assignment only for Hospital Staff (role_id = 14)
+        const showCounter = (selectedRole == '1') && selectedDepartment;
 
         counterDiv.style.display = showCounter ? 'block' : 'none';
 
