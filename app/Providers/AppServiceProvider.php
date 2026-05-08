@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 
 
@@ -24,5 +25,11 @@ class AppServiceProvider extends ServiceProvider
         if (env('APP_ENV') === 'production') {
              URL::forceScheme('https');
         }
+
+        // Disconnect after each queue job / request lifecycle
+        DB::connection()->setReconnector(function ($connection) {
+            $connection->disconnect();
+            $connection->reconnect();
+        });
     }
 }
