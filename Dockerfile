@@ -52,9 +52,8 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install frontend dependencies and build Vite assets
+# Install frontend dependencies (using Bootstrap CDN - no build needed)
 RUN npm install
-RUN npm run build
 
 # Create storage symlink for public files
 RUN php artisan storage:link || true
