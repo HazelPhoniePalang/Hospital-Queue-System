@@ -13,6 +13,16 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.departments') }}" class="d-flex flex-column flex-md-row gap-2 mb-4">
+        <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="Search department name, code, location...">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary px-4">Search</button>
+            @if($search)
+                <a href="{{ route('admin.departments') }}" class="btn btn-outline-secondary px-4">Clear</a>
+            @endif
+        </div>
+    </form>
+
     <div class="row g-4">
         @forelse($departments as $d)
             <div class="col-md-6 col-xl-4">
@@ -41,7 +51,7 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="empty-state">No departments have been created yet.</div>
+                <div class="empty-state">{{ $search ? 'No departments match your search.' : 'No departments have been created yet.' }}</div>
             </div>
         @endforelse
     </div>

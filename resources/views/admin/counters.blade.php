@@ -10,6 +10,9 @@
         </div>
         <div class="d-flex align-items-start gap-3">
             <form method="GET" action="{{ route('admin.counters') }}" class="d-flex gap-2">
+                @if($search)
+                    <input type="hidden" name="search" value="{{ $search }}">
+                @endif
                 <select name="department_id" class="form-select" onchange="this.form.submit()">
                     <option value="">All Departments</option>
                     @foreach($departments as $dept)
@@ -20,6 +23,19 @@
             <button onclick="new bootstrap.Modal(document.getElementById('counter-modal')).show()" class="btn btn-primary px-4">Add Counter</button>
         </div>
     </div>
+
+    <form method="GET" action="{{ route('admin.counters') }}" class="d-flex flex-column flex-md-row gap-2 mb-4">
+        @if(request('department_id'))
+            <input type="hidden" name="department_id" value="{{ request('department_id') }}">
+        @endif
+        <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="Search counter, department, staff, status...">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary px-4">Search</button>
+            @if($search || request('department_id'))
+                <a href="{{ route('admin.counters') }}" class="btn btn-outline-secondary px-4">Clear</a>
+            @endif
+        </div>
+    </form>
 
     <div class="app-card p-4 p-lg-5">
         <div class="table-responsive">
@@ -57,7 +73,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="empty-state">No counters have been created yet.</td>
+                            <td colspan="5" class="empty-state">{{ ($search || request('department_id')) ? 'No counters match your filters.' : 'No counters have been created yet.' }}</td>
                         </tr>
                     @endforelse
                 </tbody>

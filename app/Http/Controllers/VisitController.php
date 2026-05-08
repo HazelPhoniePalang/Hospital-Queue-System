@@ -7,6 +7,7 @@ use App\Models\Visit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class VisitController extends Controller
 {
@@ -52,7 +53,7 @@ class VisitController extends Controller
             ]
         );
 
-        // Generate Medical Certificate PDF using DomPDF
+        // Generate and save the medical certificate PDF after consultation.
         $patient = $queue->patient;
         $department = $queue->department;
         $service = $queue->service;
@@ -60,18 +61,24 @@ class VisitController extends Controller
         $pdf = Pdf::loadView('visits.medical-certificate', compact('visit', 'queue', 'patient', 'department', 'service'));
 
         $filename = 'medical-certificate-'.$visit->id.'.pdf';
-        $path = storage_path('app/'.$filename);
-        file_put_contents($path, $pdf->output());
+        $relativePath = 'medical-certificates/'.$filename;
+
+        Storage::disk('local')->put($relativePath, $pdf->output());
 
         return redirect()->route('dashboard')
-            ->with('success', 'Visit record saved successfully.')
+            ->with('success', 'Consultation saved successfully. The medical certificate PDF was automatically saved.')
             ->with('download_pdf', $filename)
+            ->with('medical_certificate_path', $relativePath)
             ->with('visit_id', $visit->id);
     }
 
     public function downloadPdf($filename)
     {
-        $path = storage_path('app/'.$filename);
+        $path = Storage::disk('local')->path('medical-certificates/'.$filename);
+
+        if (! file_exists($path)) {
+            $path = storage_path('app/'.$filename);
+        }
 
         if (! file_exists($path)) {
             return redirect()->route('dashboard')->with('error', 'PDF not found.');

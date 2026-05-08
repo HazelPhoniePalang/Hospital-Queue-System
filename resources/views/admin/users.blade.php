@@ -21,6 +21,16 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.users') }}" class="d-flex flex-column flex-md-row gap-2 mb-4">
+        <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="Search name, email, role, department, counter...">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary px-4">Search</button>
+            @if($search)
+                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary px-4">Clear</a>
+            @endif
+        </div>
+    </form>
+
     <div class="app-card p-4 p-lg-5">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -72,7 +82,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="empty-state">No users have been created yet.</td>
+                            <td colspan="6" class="empty-state">{{ $search ? 'No users match your search.' : 'No users have been created yet.' }}</td>
                         </tr>
                     @endforelse
                 </tbody>

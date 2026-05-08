@@ -614,7 +614,7 @@
     <main class="pb-5">
         @if(session('success') || session('error'))
             <div class="container pt-4">
-                @if(session('success'))
+                @if(session('success') && ! session('download_pdf'))
                     <div class="alert alert-success border-0 shadow-sm rounded-4">{{ session('success') }}</div>
                 @endif
                 @if(session('error'))

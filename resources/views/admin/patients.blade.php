@@ -16,6 +16,16 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.patients') }}" class="d-flex flex-column flex-md-row gap-2 mb-4">
+        <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="Search patient name, contact, gender, address...">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary px-4">Search</button>
+            @if($search)
+                <a href="{{ route('admin.patients') }}" class="btn btn-outline-secondary px-4">Clear</a>
+            @endif
+        </div>
+    </form>
+
     <div class="app-card p-4 p-lg-5">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -60,7 +70,7 @@
                                     <form action="{{ route('admin.patients.delete', $patient->getKey()) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Archive patient" onclick="return confirm('Archive this patient record?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Archive patient" onclick="return confirm('Delete this patient record?')">
                                             Delete
                                         </button>
                                     </form>
@@ -69,7 +79,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="empty-state">No patient records have been created yet.</td>
+                            <td colspan="7" class="empty-state">{{ $search ? 'No patient records match your search.' : 'No patient records have been created yet.' }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -78,7 +88,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ route('admin.patients.archive') }}" class="text-decoration-none text-body-tertiary small">View archived patients</a>
+        <a href="{{ route('admin.patients.archive') }}" class="text-decoration-none text-body-tertiary small">View deleted patients</a>
     </div>
 
     <div class="modal fade" id="patient-modal" tabindex="-1">

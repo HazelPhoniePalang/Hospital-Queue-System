@@ -2,11 +2,19 @@
 
 @section('content')
 <div class="container py-5">
-    @if(session('success') && session('download_pdf'))
-    <div class="alert alert-success d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3 rounded-5">
+    @if(session('download_pdf'))
+    <div class="alert alert-success d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3 rounded-5 border-0 shadow-sm">
         <div>
-            <i class="bi bi-check-circle me-2"></i>
-            {{ session('success') }}
+            <div class="fw-semibold mb-1">
+                <i class="bi bi-check-circle me-2"></i>
+                Consultation completed
+            </div>
+            <div>{{ session('success') }}</div>
+            @if(session('medical_certificate_path'))
+                <div class="small text-success-emphasis mt-1">
+                    Saved as {{ session('medical_certificate_path') }}
+                </div>
+            @endif
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('visits.download-pdf', session('download_pdf')) }}" target="_blank" class="btn btn-success">

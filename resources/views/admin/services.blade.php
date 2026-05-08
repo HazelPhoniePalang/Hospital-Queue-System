@@ -13,6 +13,16 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.services') }}" class="d-flex flex-column flex-md-row gap-2 mb-4">
+        <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="Search service, department, duration, price...">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary px-4">Search</button>
+            @if($search)
+                <a href="{{ route('admin.services') }}" class="btn btn-outline-secondary px-4">Clear</a>
+            @endif
+        </div>
+    </form>
+
     <div class="app-card p-4 p-lg-5">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -50,7 +60,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="empty-state">No services have been configured yet.</td>
+                            <td colspan="5" class="empty-state">{{ $search ? 'No services match your search.' : 'No services have been configured yet.' }}</td>
                         </tr>
                     @endforelse
                 </tbody>

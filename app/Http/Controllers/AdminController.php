@@ -14,14 +14,26 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
     // Patient Management
-    public function patients()
+    public function patients(Request $request)
     {
+        $search = trim($request->input('search', ''));
+
         $patients = Patient::withCount(['queues', 'visits'])
+            ->when($search !== '', function ($query) use ($search) {
+                $this->applySearch($query, $search, [
+                    'first_name',
+                    'last_name',
+                    'birth_date',
+                    'gender',
+                    'contact_no',
+                    'address',
+                ]);
+            })
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
 
-        return view('admin.patients', compact('patients'));
+        return view('admin.patients', compact('patients', 'search'));
     }
 
     public function storePatient(Request $request)
@@ -68,7 +80,8 @@ class AdminController extends Controller
     public function archivedPatients()
     {
         $items = Patient::onlyTrashed()
-            ->orderByDesc('deleted_at')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
             ->get();
 
         return view('admin.archive', [
@@ -91,14 +104,27 @@ class AdminController extends Controller
     }
 
     // User Management
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::with(['role', 'department', 'assignedCounters'])->get();
-        $roles = Role::all();
-        $departments = Department::all();
-        $counters = Counter::with(['department'])->get();
+        $search = trim($request->input('search', ''));
 
-        return view('admin.users', compact('users', 'roles', 'departments', 'counters'));
+        $users = User::with(['role', 'department', 'assignedCounters'])
+            ->when($search !== '', function ($query) use ($search) {
+                $this->applySearch($query, $search, ['name', 'email'], [
+                    'role' => ['name'],
+                    'department' => ['name', 'code', 'location'],
+                    'assignedCounters' => ['name', 'status'],
+                ]);
+            })
+            ->orderBy('name')
+            ->get();
+        $roles = Role::orderBy('name')->get();
+        $departments = Department::orderBy('name')->get();
+        $counters = Counter::with(['department'])
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.users', compact('users', 'roles', 'departments', 'counters', 'search'));
     }
 
     public function storeUser(Request $request)
@@ -219,7 +245,7 @@ class AdminController extends Controller
     {
         $items = User::onlyTrashed()
             ->with(['role', 'department'])
-            ->orderByDesc('deleted_at')
+            ->orderBy('name')
             ->get();
 
         return view('admin.archive', [
@@ -242,11 +268,18 @@ class AdminController extends Controller
     }
 
     // Department Management
-    public function departments()
+    public function departments(Request $request)
     {
-        $departments = Department::withCount('services')->get();
+        $search = trim($request->input('search', ''));
 
-        return view('admin.departments', compact('departments'));
+        $departments = Department::withCount('services')
+            ->when($search !== '', function ($query) use ($search) {
+                $this->applySearch($query, $search, ['name', 'code', 'location']);
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.departments', compact('departments', 'search'));
     }
 
     public function storeDepartment(Request $request)
@@ -288,7 +321,7 @@ class AdminController extends Controller
     {
         $items = Department::onlyTrashed()
             ->withCount('services')
-            ->orderByDesc('deleted_at')
+            ->orderBy('name')
             ->get();
 
         return view('admin.archive', [
@@ -311,12 +344,21 @@ class AdminController extends Controller
     }
 
     // Service Management
-    public function services()
+    public function services(Request $request)
     {
-        $services = Service::with('department')->get();
-        $departments = Department::all();
+        $search = trim($request->input('search', ''));
 
-        return view('admin.services', compact('services', 'departments'));
+        $services = Service::with('department')
+            ->when($search !== '', function ($query) use ($search) {
+                $this->applySearch($query, $search, ['service_name', 'average_duration', 'cost'], [
+                    'department' => ['name', 'code', 'location'],
+                ]);
+            })
+            ->orderBy('service_name')
+            ->get();
+        $departments = Department::orderBy('name')->get();
+
+        return view('admin.services', compact('services', 'departments', 'search'));
     }
 
     public function storeService(Request $request)
@@ -360,7 +402,7 @@ class AdminController extends Controller
     {
         $items = Service::onlyTrashed()
             ->with(['department'])
-            ->orderByDesc('deleted_at')
+            ->orderBy('service_name')
             ->get();
 
         return view('admin.archive', [
@@ -385,9 +427,21 @@ class AdminController extends Controller
     // Counter Management
     public function counters(Request $request)
     {
-        $departments = Department::all();
+        $search = trim($request->input('search', ''));
+        $departments = Department::orderBy('name')->get();
 
-        $counters = Counter::with(['department', 'assignedStaff'])->get();
+        $counters = Counter::with(['department', 'assignedStaff.role'])
+            ->when($request->filled('department_id'), function ($query) use ($request) {
+                $query->where('department_id', $request->department_id);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $this->applySearch($query, $search, ['name', 'status'], [
+                    'department' => ['name', 'code', 'location'],
+                    'assignedStaff' => ['name', 'email'],
+                ]);
+            })
+            ->orderBy('name')
+            ->get();
 
         $staffQuery = User::query();
 
@@ -395,9 +449,12 @@ class AdminController extends Controller
             $staffQuery->where('department_id', $request->department_id);
         }
 
-        $staff = $staffQuery->whereIn('role_id', [2, 3, 4, 5])->with(['role', 'department'])->get();
+        $staff = $staffQuery->whereIn('role_id', [2, 3, 4, 5])
+            ->with(['role', 'department'])
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.counters', compact('counters', 'departments', 'staff'));
+        return view('admin.counters', compact('counters', 'departments', 'staff', 'search'));
     }
 
     public function storeCounter(Request $request)
@@ -454,7 +511,7 @@ class AdminController extends Controller
     {
         $items = Counter::onlyTrashed()
             ->with(['department'])
-            ->orderByDesc('deleted_at')
+            ->orderBy('name')
             ->get();
 
         return view('admin.archive', [
@@ -476,5 +533,28 @@ class AdminController extends Controller
         $counter->update(['status' => 'ready']);
 
         return back()->with('success', 'Counter restored successfully.');
+    }
+
+    private function applySearch($query, string $search, array $columns, array $relations = []): void
+    {
+        $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($terms as $term) {
+            $like = '%'.$term.'%';
+
+            $query->where(function ($query) use ($columns, $relations, $like) {
+                foreach ($columns as $column) {
+                    $query->orWhere($column, 'LIKE', $like);
+                }
+
+                foreach ($relations as $relation => $relationColumns) {
+                    $query->orWhereHas($relation, function ($relationQuery) use ($relationColumns, $like) {
+                        foreach ($relationColumns as $column) {
+                            $relationQuery->orWhere($column, 'LIKE', $like);
+                        }
+                    });
+                }
+            });
+        }
     }
 }
