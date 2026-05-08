@@ -67,4 +67,4 @@ storage/framework/views bootstrap/cache public/uploads \
 
 EXPOSE 10000
 
-CMD ["apache2-foreground"]
+CMD bash -c "php artisan migrate --force && apache2-foreground"
