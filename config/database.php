@@ -61,15 +61,16 @@ return [
             'engine' => null,
             'sticky' => false,
             'pool' => [
-                'min_connections' => 1,
-                'max_connections' => 5,
-                'wait_timeout' => 30,
-                'idle_timeout' => 60,
+                'min_connections' => 0,
+                'max_connections' => 1,
+                'wait_timeout' => 10,
+                'idle_timeout' => 30,
             ],
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::ATTR_PERSISTENT => false,
-                PDO::ATTR_TIMEOUT => 5,
+                PDO::ATTR_PERSISTENT => env('RENDER', false) ? false : false, // Always false for Render
+                PDO::ATTR_TIMEOUT => env('RENDER', false) ? 3 : 5,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\CacheAuthUser::class,
+            \App\Http\Middleware\CleanupConnections::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

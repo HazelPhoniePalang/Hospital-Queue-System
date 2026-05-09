@@ -69,52 +69,75 @@ class QueueController extends Controller
 
     public function processPayment(Request $request, $id)
     {
-        $validated = $request->validate([
-            'payment_method' => 'required|in:cash,gcash,card',
-            'amount' => 'required|numeric|min:0.01',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $queue = QueueEntry::with(['patient', 'service'])->findOrFail($id);
-        $user = Auth::user();
-
-        if ($queue->status !== 'called') {
-            return back()->with('error', 'Invalid queue status for payment.');
-        }
-
-        // Validate that the submitted amount matches the service cost
-        $serviceCost = (float) $queue->service->cost;
-        $submittedAmount = (float) $validated['amount'];
-        
-        if (abs($submittedAmount - $serviceCost) > 0.001) { // Allow for floating point precision differences
-            return back()->with('error', 'Invalid payment amount. Please verify the amount due.');
-        }
-
-        // Create payment record
-        $payment = Payment::create([
-            'queue_id' => $queue->getKey(),
-            'patient_id' => $queue->patient_id,
-            'amount' => $submittedAmount,
-            'payment_method' => $validated['payment_method'],
-            'status' => 'completed',
-            'paid_at' => Carbon::now(),
-        ]);
-
-        // Mark queue as paid (ready for doctor assignment)
-        $queue->update([
-            'status' => 'paid',
-        ]);
-
-        // Update counter status
-        $counter = Counter::where('assigned_staff_id', $user->id)->first();
-        if ($counter && $counter->current_queue_id == $queue->getKey()) {
-            $counter->update([
-                'current_queue_id' => null,
-                'status' => $counter->status === 'unavailable' ? 'unavailable' : 'ready',
+            $validated = $request->validate([
+                'payment_method' => 'required|in:cash,gcash,card',
+                'amount' => 'required|numeric|min:0.01',
             ]);
-        }
 
-        // Redirect to receipt
-        return redirect()->route('payment.receipt', $payment->id)->with('success', 'Payment processed successfully.');
+            $queue = QueueEntry::with(['patient', 'service'])->findOrFail($id);
+            $user = Auth::user();
+
+            if ($queue->status !== 'called') {
+                DB::rollBack();
+                return back()->with('error', 'Invalid queue status for payment.');
+            }
+
+            // Validate that the submitted amount matches the service cost
+            $serviceCost = (float) $queue->service->cost;
+            $submittedAmount = (float) $validated['amount'];
+
+            if (abs($submittedAmount - $serviceCost) > 0.001) { // Allow for floating point precision differences
+                DB::rollBack();
+                return back()->with('error', 'Invalid payment amount. Please verify the amount due.');
+            }
+
+            // Create payment record
+            $payment = Payment::create([
+                'queue_id' => $queue->getKey(),
+                'patient_id' => $queue->patient_id,
+                'amount' => $submittedAmount,
+                'payment_method' => $validated['payment_method'],
+                'status' => 'completed',
+                'paid_at' => Carbon::now(),
+            ]);
+
+            // Mark queue as paid (ready for doctor assignment)
+            $queue->update([
+                'status' => 'paid',
+            ]);
+
+            // Update counter status
+            $counter = Counter::where('assigned_staff_id', $user->id)->first();
+            if ($counter && $counter->current_queue_id == $queue->getKey()) {
+                $counter->update([
+                    'current_queue_id' => null,
+                    'status' => $counter->status === 'unavailable' ? 'unavailable' : 'ready',
+                ]);
+            }
+
+            DB::commit();
+
+            // Force connection cleanup on Render
+            if (getenv('RENDER')) {
+                DB::disconnect();
+            }
+
+            // Redirect to receipt
+            return redirect()->route('payment.receipt', $payment->id)->with('success', 'Payment processed successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Force connection cleanup on error
+            if (getenv('RENDER')) {
+                DB::disconnect();
+            }
+
+            return back()->with('error', 'Payment failed. Please try again.');
+        }
     }
 
     public function paymentReceipt($paymentId)
