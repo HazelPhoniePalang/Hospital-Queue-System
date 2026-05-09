@@ -2,18 +2,19 @@ FROM php:8.4-apache
 
 # Install system packages and PHP extensions
 RUN apt-get update && apt-get install -y \
- git \
- unzip \
- curl \
- libpq-dev \
- libzip-dev \
- libonig-dev \
- libxml2-dev \
- libpng-dev \
- zip \
- && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip mbstring xml bcmath \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+  git \
+  unzip \
+  curl \
+  libpq-dev \
+  libzip-dev \
+  libonig-dev \
+  libxml2-dev \
+  libpng-dev \
+  zip \
+  && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip mbstring xml bcmath \
+  && pecl install redis && docker-php-ext-enable redis \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache rewrite
 RUN a2enmod rewrite

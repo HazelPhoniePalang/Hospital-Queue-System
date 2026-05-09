@@ -8,6 +8,7 @@ use App\Models\QueueCounter;
 use App\Models\QueueEntry;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PatientKioskController extends Controller
@@ -19,7 +20,9 @@ class PatientKioskController extends Controller
 
     public function showForm()
     {
-        $departments = Department::with('services')->get();
+        $departments = Cache::remember('departments_with_services', 3600, function () {
+            return Department::with('services')->get();
+        });
 
         return view('kiosk.form', compact('departments'));
     }

@@ -60,8 +60,14 @@ return [
             'strict' => true,
             'engine' => null,
             'sticky' => false,
+            'pool' => [
+                'min_connections' => 1,
+                'max_connections' => 5,
+                'wait_timeout' => 30,
+                'idle_timeout' => 60,
+            ],
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_PERSISTENT => true,
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
