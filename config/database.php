@@ -67,7 +67,9 @@ return [
                 'idle_timeout' => 60,
             ],
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::ATTR_PERSISTENT => true,
+                PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_TIMEOUT => 5,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],

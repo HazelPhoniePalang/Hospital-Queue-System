@@ -31,5 +31,9 @@ class AppServiceProvider extends ServiceProvider
             $connection->disconnect();
             $connection->reconnect();
         });
+
+        DB::whenQueryingForLongerThan(5000, function () {
+            DB::reconnect();
+        });
     }
 }
