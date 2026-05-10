@@ -6,7 +6,7 @@
         <div>
             <span class="eyebrow mb-3">Reports</span>
             <h1 class="section-title mb-3">Generate and export reports</h1>
-            <p class="lede mb-0">Filter by date range, department, and status. Export to PDF or CSV.</p>
+            <p class="lede mb-0">Filter by date range, department, and status.</p>
         </div>
     </div>
 
